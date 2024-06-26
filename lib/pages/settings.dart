@@ -96,19 +96,6 @@ class LanguageSelection extends StatelessWidget {
             },
           ),
           SizedBox(height: 20.0),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange, 
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 12.0),
-            ),
-            child: Text('Choose'),
-          ),
         ],
       ),
     );

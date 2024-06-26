@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/api/character_service.dart';
+import 'package:flutter_application_1/classes/character.dart';
+import 'package:flutter_application_1/pages/characters/character_detail_screen.dart';
 
-class CharacterListPage extends StatefulWidget {
+ class CharacterListScreen extends StatefulWidget {
   @override
-  _CharacterListPageState createState() => _CharacterListPageState();
+  _CharacterListScreenState createState() => _CharacterListScreenState();
 }
 
-class _CharacterListPageState extends State<CharacterListPage> {
-  final List<Character> characters = [
-    Character('Deadpool', 'assets/deadpool.jpg', true),
-    Character('Hulk', 'assets/hulk.jpg', false),
-    Character('Iron Man', 'assets/ironman.jpg', false),
-    Character('Spider Man', 'assets/spiderman.jpg', false),
-    Character('Wolverine', 'assets/wolverine.jpg', false),
-    Character('Thor', 'assets/thor.jpg', false),
-  ];
+class _CharacterListScreenState extends State<CharacterListScreen> {
+  late Future<List<Character>> futureCharacters;
+  final CharacterService _characterService = CharacterService();
+
+  @override
+  void initState() {
+    super.initState();
+    futureCharacters = _characterService.fetchCharacters();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,89 +27,59 @@ class _CharacterListPageState extends State<CharacterListPage> {
           IconButton(
             icon: Icon(Icons.settings),
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/settings');
+              Navigator.pushNamed(context, '/settings');
             },
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: characters.length,
-        itemBuilder: (context, index) {
-          return CharacterCard(
-            character: characters[index],
-            onFavoriteToggle: () {
-              setState(() {
-                characters[index].isFavorite = !characters[index].isFavorite;
-              });
-            },
-          );
+      body: FutureBuilder<List<Character>>(
+        future: futureCharacters,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No characters found'));
+          } else {
+            List<Character> characters = snapshot.data!;
+            return ListView.builder(
+              itemCount: characters.length,
+              itemBuilder: (context, index) {
+                return CharacterCard(
+                  character: characters[index],
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/characterDetail',
+                      arguments: characters[index],
+                    );
+                  },
+                );
+              },
+            );
+          }
         },
       ),
     );
   }
 }
 
-class Character {
-  String title;
-  String imagePath;
-  bool isFavorite;
-
-  Character(this.title, this.imagePath, this.isFavorite);
-}
-
 class CharacterCard extends StatelessWidget {
   final Character character;
-  final VoidCallback onFavoriteToggle;
+  final VoidCallback onTap;
 
-  CharacterCard({required this.character, required this.onFavoriteToggle});
+  CharacterCard({required this.character, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+    return GestureDetector(
+      onTap: onTap,
       child: Card(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-        elevation: 4.0,
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: Image.asset(
-                  character.imagePath,
-                  width: 70,
-                  height: 70,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              SizedBox(width: 16.0),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      character.title,
-                      style: TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  character.isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: character.isFavorite ? Colors.red : null,
-                ),
-                onPressed: onFavoriteToggle,
-              ),
-            ],
-          ),
+        child: ListTile(
+          leading: Image.network(character.image, width: 50, height: 50),
+          title: Text(character.name),
+          subtitle: Text(character.species),
         ),
       ),
     );
