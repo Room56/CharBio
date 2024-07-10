@@ -6,14 +6,7 @@ class CharacterListPage extends StatefulWidget {
 }
 
 class _CharacterListPageState extends State<CharacterListPage> {
-  final List<Character> characters = [
-    Character('Deadpool', 'assets/deadpool.jpg', true),
-    Character('Hulk', 'assets/hulk.jpg', false),
-    Character('Iron Man', 'assets/ironman.jpg', false),
-    Character('Spider Man', 'assets/spiderman.jpg', false),
-    Character('Wolverine', 'assets/wolverine.jpg', false),
-    Character('Thor', 'assets/thor.jpg', false),
-  ];
+  List<Character> characters = [];
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +44,11 @@ class Character {
   String imagePath;
   bool isFavorite;
 
-  Character(this.title, this.imagePath, this.isFavorite);
+  String description;
+
+  String detail;
+
+  Character(this.title, this.imagePath, this.isFavorite, this.description, this.detail);
 }
 
 class CharacterCard extends StatelessWidget {
